@@ -48,7 +48,7 @@ exports.init = function (server, options) {
     
     var key = this.entries[path];
     
-    if (!key) {
+    if (!key && !path) {
       var indices = ["index.html"];
       
       _.find(indices, function (index) {
@@ -70,8 +70,6 @@ exports.init = function (server, options) {
         reply(buffer)
           .type(mime);
       });
-    
-    return cache.get(key);
   };
   
   

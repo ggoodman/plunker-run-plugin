@@ -14,16 +14,16 @@ module.exports = {
     },
   },
   handler: function (request, reply) {
-    var prefix = "plunk";
+    var prefix = "project";
     var key = request.params.plunkId;
     
-    if (request.path === "/plunk/" + request.params.plunkId) {
-      return reply.redirect("/plunk/" + request.params.plunkId + "/");
+    if (request.path === "/project/" + request.params.plunkId) {
+      return reply.redirect("/project/" + request.params.plunkId + "/");
     }
 
-    var fetchLegacyPlunk = Promise.promisify(request.server.methods.previews.fetchLegacyPlunk);
+    var fetchProject = Promise.promisify(request.server.methods.previews.fetchProject);
     
-    Previews.load(prefix, key, fetchLegacyPlunk)
+    Previews.load(prefix, key, fetchProject)
       .then(function (preview) {
         preview.render(reply, request.params.path || "")
           .catch(reply);

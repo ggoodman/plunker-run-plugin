@@ -8,7 +8,7 @@ module.exports = function (plunkId, next) {
     timeout: 3000,
     json: true,
   };
-  var legacyApiUrl = Lookup.get(this.server.config, "run.plunks_api_url", "http://api.plnkr.co/plunks/");
+  var legacyApiUrl = Lookup.get(this.server.config, "services.run.legacy_api_url", "http://api.plnkr.co") + "/plunks/";
   
   return new Promise(function (resolve, reject) {
     Wreck.get(legacyApiUrl + plunkId, options, function (err, resp, payload) {
