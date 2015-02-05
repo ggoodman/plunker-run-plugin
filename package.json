@@ -6,6 +6,8 @@
   "dependencies": {
     "bluebird": "^2.9.6",
     "boom": "^2.6.1",
+    "good": "^5.1.1",
+    "good-console": "^4.1.0",
     "hapi": "^8.1.0",
     "joi": "^5.1.0",
     "lodash": "^3.1.0",

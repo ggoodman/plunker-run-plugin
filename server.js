@@ -1,5 +1,6 @@
 var Good = require("good");
 var Hapi = require("hapi");
+var Lookup = require("object-path");
 var _ = require("lodash");
 
 var server = new Hapi.Server({
@@ -33,7 +34,7 @@ var plugins = [
 ];
 
 server.connection({
-  host: "api.metwork.me",
+  host: Lookup.get(config, "services.run.public.host", "localhost"),
   address: "0.0.0.0",
   port: 8080
 });
