@@ -1,0 +1,24 @@
+{
+  "name": "plunker-run-plugin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^2.9.6",
+    "boom": "^2.6.1",
+    "hapi": "^8.1.0",
+    "joi": "^5.1.0",
+    "lodash": "^3.1.0",
+    "lru-cache": "^2.5.0",
+    "mime-types": "^2.0.8",
+    "object-path": "^0.9.0",
+    "wreck": "^5.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Geoff Goodman",
+  "license": "ISC"
+}
