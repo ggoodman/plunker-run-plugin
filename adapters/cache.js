@@ -1,4 +1,5 @@
 var Boom = require("boom");
+var Lookup = require("object-path");
 var LRU = require("lru-cache");
 var Promise = require("bluebird");
 var _ = require("lodash");
@@ -6,8 +7,8 @@ var _ = require("lodash");
 
 exports.init = function (server, options) {
   var cache = new LRU({
-    max: 1024 * 100,
-    maxAge: 1000 * 60 * 30, // 30min
+    max: Lookup.get(server.config, "services.run.cacheSize", 1024 * 400),
+    maxAge: Lookup.get(server.config, "services.run.maxAge", 1000 * 60 * 30), // 30min
     length: function (item) {
       if (item instanceof Buffer) return item.length;
       
