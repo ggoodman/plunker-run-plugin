@@ -14,6 +14,8 @@ internals.indices = [
 internals.transformers = [
   require("./transformers/noop"),
   
+  require("./transformers/6to5"),
+  require("./transformers/es6"),
   require("./transformers/coffee"),
   require("./transformers/jade"),
   require("./transformers/less"),

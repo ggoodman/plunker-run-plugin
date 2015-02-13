@@ -36,7 +36,8 @@ var plugins = [
 server.connection({
   host: Lookup.get(config, "services.run.public.host", "localhost"),
   address: "0.0.0.0",
-  port: 8080
+  port: Lookup.get(config, "services.run.local.port", 8080),
+  labels: ["run"],
 });
 
 server.register(plugins, function (err) {

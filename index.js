@@ -24,7 +24,14 @@ exports.register = function (server, options, next) {
     }]);
   };
   
+  var cacheOptions = {
+    privacy: "public",
+    expiresIn: 1000 * 60 * 60 * 24,
+  };
   
+  
+  server.route({ method: "GET", path: "/favicon.ico", config: { cache: cacheOptions, handler: { file: __dirname + "/static/favicon.ico" } } });
+  server.route({ method: "GET", path: "/robots.txt", config: { cache: cacheOptions, handler: { file: __dirname + "/static/robots.txt" } } });
   
   
   loadAdaptors()

@@ -10,7 +10,7 @@ module.exports = {
   validate: {
     params: {
       plunkId: Joi.string().alphanum().required(),
-      path: Joi.string().required().regex(/^(?:\.[a-zA-Z0-9]|[a-zA-Z0-9])[\w-]*(?:\.[\w-]+)*(?:\/[a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).optional(),
+      path: Joi.string().regex(/^\/?(?:\.[a-zA-Z0-9]|[a-zA-Z0-9])[\w-]*(?:\.[\w-]+)*(?:\/[a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).allow("").default("").optional(),
     },
   },
   handler: function (request, reply) {

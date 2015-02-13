@@ -12,6 +12,8 @@ exports.register = function (server, options, next) {
   
   server.route({ method: "GET", path: "/plunks/{plunkId}/{path*}", config: require("./routes/handleLegacyPlunk") });
   server.route({ method: "GET", path: "/project/{plunkId}/{path*}", config: require("./routes/handleProject") });
+  server.route({ method: "POST", path: "/{previewId}/{path*}", config: require("./routes/handleCreatePreview") });
+  server.route({ method: "GET", path: "/{previewId}/{path*}", config: require("./routes/handleServePreview") });
   
   next();
 };

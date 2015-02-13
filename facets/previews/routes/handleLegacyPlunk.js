@@ -10,15 +10,15 @@ module.exports = {
   validate: {
     params: {
       plunkId: Joi.string().alphanum().required(),
-      path: Joi.string().required().regex(/^(?:\.[a-zA-Z0-9]|[a-zA-Z0-9])[\w-]*(?:\.[\w-]+)*(?:\/[a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).optional(),
+      path: Joi.string().regex(/^\/?(?:\.[a-zA-Z0-9]|[a-zA-Z0-9])[\w-]*(?:\.[\w-]+)*(?:\/[a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).allow("").default("").optional(),
     },
   },
   handler: function (request, reply) {
     var prefix = "plunk";
     var key = request.params.plunkId;
     
-    if (request.path === "/plunk/" + request.params.plunkId) {
-      return reply.redirect("/plunk/" + request.params.plunkId + "/");
+    if (request.path === "/plunks/" + request.params.plunkId) {
+      return reply.redirect("/plunks/" + request.params.plunkId + "/");
     }
 
     var fetchLegacyPlunk = Promise.promisify(request.server.methods.previews.fetchLegacyPlunk);

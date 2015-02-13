@@ -41,10 +41,12 @@ exports.init = function (server, options) {
     if (!_.isFunction(options.getter)) options.getter = Cache.get.bind(Cache);
     
     return new Promise(function (resolve, reject) {
-      var candidates = Transform.getPathCandidates([path]);
+      var candidates = Transform.getPathCandidates([path.toLowerCase()]);
       var found = self.findMatchingEntry(candidates);
-            
-      if (!found) return reject(Boom.notFound());
+      
+      if (!found) {
+        return reject(Boom.notFound());
+      }
       
       var transform = Promise.promisify(found.transformer.transform);
       var complete = function (content) {
@@ -57,7 +59,8 @@ exports.init = function (server, options) {
       return Promise.resolve(options.getter(found.entry))
         .call("toString", "utf8")
         .then(transform)
-        .then(complete);
+        .then(complete)
+        .catch(reject);
     });
   };
   
