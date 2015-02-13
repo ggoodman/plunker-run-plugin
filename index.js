@@ -10,7 +10,10 @@ exports.register = function (server, options, next) {
   
   var loadAdaptors = function () {
     return Promise.all([
+      require("./adapters/cache").init(server, options),
       require("./adapters/previews").init(server, options),
+      require("./adapters/streamer").init(server, options),
+      require("./adapters/transform").init(server, options),
     ]);
   };
 

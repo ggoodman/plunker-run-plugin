@@ -1,41 +1,13 @@
 var Boom = require("boom");
-var Cache = require("lru-cache");
+var Cache = require("./cache");
 var Crypto = require("crypto");
 var Mime = require("mime-types");
-var Path = require("path");
 var Promise = require("bluebird");
+var Transform = require("./transform");
 var _ = require("lodash");
 
 
 exports.init = function (server, options) {
-  var cacheInst = new Cache({
-    max: 1024 * 100,
-    maxAge: 1000 * 60 * 30, // 30min
-    length: function (item) {
-      if (item instanceof Buffer) return item.length;
-      
-      return JSON.stringify(item).length;
-    }
-  });
-  
-  var cache = {
-    del: function (key) {
-      cacheInst.del(key);
-      
-      return Promise.resolve();
-    },
-    get: function (key) {
-      var value = cacheInst.get(key);
-      
-      if (value) return Promise.resolve(value);
-      else return Promise.reject(Boom.notFound());
-    },
-    set: function (key, value) {
-      cacheInst.set(key, value);
-      
-      return Promise.resolve(value);
-    }
-  };
   
   
   function Preview (key, entries) {
@@ -43,33 +15,50 @@ exports.init = function (server, options) {
     this.entries = entries;
   }
   
-  Preview.prototype.render = function (reply, path) {
-    path = (path || "").toLocaleLowerCase();
+  Preview.prototype.findMatchingEntry = function (candidates) {
+    var found;
     
-    var key = this.entries[path];
-    
-    if (!key && !path) {
-      var indices = ["index.html"];
+    _.forEach(candidates, function (candidate) {
+      var entry = this.entries[candidate.responsePath];
       
-      _.find(indices, function (index) {
-        key = this.entries[index];
-        path = index;
-        
-        // TODO compilers
-        
-        return !!key;
-      }, this);
-    }
+      if (entry) {
+        found = candidate;
+        found.entry = entry;
+      }
+      
+      return !found;
+    }, this);
     
-    if (!key) return reply(Boom.notFound());
+    return found;
+  };
+  
+  Preview.prototype.render = function (path, options) {
+    var self = this;
     
-    return cache.get(key)
-      .then(function (buffer) {
-        var mime = Mime.lookup(path) || "text/plain";
-        
-        reply(buffer)
-          .type(mime);
-      });
+    if (!options) options = {};
+    else if (_.isFunction(options)) options = {getter: options};
+    
+    if (!_.isFunction(options.getter)) options.getter = Cache.get.bind(Cache);
+    
+    return new Promise(function (resolve, reject) {
+      var candidates = Transform.getPathCandidates([path]);
+      var found = self.findMatchingEntry(candidates);
+            
+      if (!found) return reject(Boom.notFound());
+      
+      var transform = Promise.promisify(found.transformer.transform);
+      var complete = function (content) {
+        return resolve({
+          content: content,
+          type: Mime.lookup(found.requestPath) || "text/plain",
+        });
+      };
+      
+      return Promise.resolve(options.getter(found.entry))
+        .call("toString", "utf8")
+        .then(transform)
+        .then(complete);
+    });
   };
   
   
@@ -81,7 +70,7 @@ exports.init = function (server, options) {
       
       entry.key = ["files", shasum.digest("hex")].join(".");
       
-      return cache.set(entry.key, entry.content)
+      return Cache.set(entry.key, entry.content)
         .return(entry);
     })
       .then(function (entries) {
@@ -90,7 +79,7 @@ exports.init = function (server, options) {
           .mapValues("key")
           .value();
           
-        return cache.set(key, files);
+        return Cache.set(key, files);
       })
       .then(function (entries) {
         return new Preview(key, entries);
@@ -98,7 +87,7 @@ exports.init = function (server, options) {
   };
   
   exports.open = function (key) {
-    return cache.get(key)
+    return Cache.get(key)
       .then(function (entries) {
         return new Preview(key, entries);
       });

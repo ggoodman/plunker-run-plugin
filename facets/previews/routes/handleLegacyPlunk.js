@@ -24,9 +24,13 @@ module.exports = {
     var fetchLegacyPlunk = Promise.promisify(request.server.methods.previews.fetchLegacyPlunk);
     
     Previews.load(prefix, key, fetchLegacyPlunk)
-      .then(function (preview) {
-        preview.render(reply, request.params.path || "")
-          .catch(reply);
-      }, reply);
+      .call("render", request.params.path)
+      .then(function(rendered) {
+        reply(rendered.content)
+          .type(rendered.type);
+      })
+      .catch(function (err) {
+        reply(err);
+      });
   }
 };

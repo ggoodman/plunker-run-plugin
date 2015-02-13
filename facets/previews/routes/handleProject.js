@@ -24,9 +24,13 @@ module.exports = {
     var fetchProject = Promise.promisify(request.server.methods.previews.fetchProject);
     
     Previews.load(prefix, key, fetchProject)
-      .then(function (preview) {
-        preview.render(reply, request.params.path || "")
-          .catch(reply);
-      }, reply);
+      .call("render", request.params.path)
+      .then(function(rendered) {
+        reply(rendered.content)
+          .type(rendered.type);
+      })
+      .catch(function (err) {
+        reply(err);
+      });
   }
 };
