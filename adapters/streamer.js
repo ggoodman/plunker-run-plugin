@@ -5,6 +5,7 @@ var Mime = require("mime-types");
 var Primus = require("primus");
 var Promise = require("bluebird");
 var Transform = require("./transform");
+var Sha = require("git-sha1");
 var _ = require("lodash");
 
 var internals = {};
@@ -44,26 +45,47 @@ exports.init = function (server, options) {
         action: "request",
         candidates: _.keys(candidates),
       };
+      
+      var logSpeed = function (promise, message) {
+        var start = Date.now();
+        
+        promise
+          .finally(function () {
+            var end = Date.now();
+            
+            console.log("log", message + " (" + (end - start) + "ms)");
+          });
+        
+        return promise;
+      };
 
       Promise.promisifyAll(spark);
       
-      spark.writeAndWaitAsync(clientRequest)
+      logSpeed(spark.writeAndWaitAsync(clientRequest), "Requesting " + path)
         .then(function (clientResponse) {
-          if (!clientResponse || !clientResponse.path) throw new Boom.notFound();
+          if (!clientResponse) throw new Boom.notFound();
           
-          var candidate = candidates[clientResponse.path];
-          var transform = Promise.promisify(candidate.transformer.transform);
-          
-          if (!candidate) throw new Boom.notFound();
-          
-          return transform(clientResponse.content)
-            .then(function (transformedContent) {
-              var mime = Mime.lookup(candidate.requestPath) || "text/plain";
-              
-              reply(transformedContent)
-                .type(mime);
-              
-            });
+          if (clientResponse.type === "buffer") {
+            if (!clientResponse.path) throw new Boom.notFound();
+            
+            var candidate = candidates[clientResponse.path];
+            var transform = Promise.promisify(candidate.transformer.transform);
+            
+            if (!candidate) throw new Boom.notFound();
+            
+            return transform(clientResponse.content)
+              .then(function (transformedContent) {
+                var mime = Mime.lookup(candidate.requestPath) || "text/plain";
+                
+                reply(transformedContent)
+                  // .header("cache-control", "private, must-revalidate")
+                  .header("last-modified", clientResponse.lastModified)
+                  .type(mime);
+                
+              });
+          } else  {
+            throw Boom.notFound();
+          }
         }, function (err) {
           request.log("error", err.message);
           

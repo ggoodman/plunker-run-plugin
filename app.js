@@ -1,4 +1,3 @@
-var Good = require("good");
 var Hapi = require("hapi");
 var Lookup = require("object-path");
 var _ = require("lodash");
@@ -21,10 +20,10 @@ var plugins = [
   {
     register: require("good"),
     options: {
-      opsInterval: 1000,
+      opsInterval: 1000 * 30,
       reporters: [{
         reporter: require('good-console'),
-        args:[{ log: '*', response: '*' }]
+        args:[{ log: '*', error: '*', ops: '*' }]
       }],
     }
   }, {

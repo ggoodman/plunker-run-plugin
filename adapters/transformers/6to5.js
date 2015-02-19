@@ -1,4 +1,4 @@
-var Compiler = require("6to5");
+var Compiler = require("babel");
 
 var compileOptions = {
   experimental: true,

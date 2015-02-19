@@ -47,7 +47,7 @@ module.exports = function (plunkId, next) {
   
   fetch("/plunks/" + plunkId)
     .then(function (plunk) {
-      return fetch("/trees/" + plunk.tree);
+      return fetch("/trees/" + plunk.head.tree_sha);
     })
     .then(function (tree) {
       var entries = [];
