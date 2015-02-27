@@ -13,19 +13,19 @@ module.exports = {
       path: Joi.string().regex(/^\/?[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*(?:\/[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).allow("").default("").optional(),
     },
   },
+  pre: [{
+    method: "previews.fetchProject(params.plunkId)",
+    assign: "project",
+  }],
   handler: function (request, reply) {
-    var prefix = "project";
-    var key = request.params.plunkId;
-    
     if (request.path === "/project/" + request.params.plunkId) {
       return reply.redirect("/project/" + request.params.plunkId + "/");
     }
-
-    var fetchProject = Promise.promisify(request.server.methods.previews.fetchProject);
     
-    Previews.load(prefix, key, fetchProject)
+    Previews.create(request.pre.project)
       .call("render", request.params.path)
       .then(function(rendered) {
+        // console.log("Rendered content", rendered);
         reply(rendered.content)
           .type(rendered.type);
       })

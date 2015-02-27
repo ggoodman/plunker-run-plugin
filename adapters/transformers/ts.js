@@ -6,7 +6,6 @@ var libSource = Fs.readFileSync(Path.join(Path.dirname(require.resolve('typescri
 var compilerOptions = {
 };
 
-var result = transform(source, libSource);
 
 module.exports = {
   testFilename: /\.js$/,
@@ -17,7 +16,7 @@ module.exports = {
     var compilerHost = {
       getSourceFile: function (filename, languageVersion) {
         if (filename === "file.ts")
-            return Typescript.createSourceFile(filename, request, compilerOptions.target, "0");
+            return Typescript.createSourceFile(filename, request.content, compilerOptions.target, "0");
         if (filename === "lib.d.ts")
             return Typescript.createSourceFile(filename, libSource, compilerOptions.target, "0");
         return undefined;
@@ -60,7 +59,10 @@ module.exports = {
     }
     
     return process.nextTick(function () {
-      reply(null, outputs.join("\n"));
+      reply(null, {
+        content: outputs.join("\n"),
+        encoding: "utf8"
+      });
     });
   }
 };

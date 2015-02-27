@@ -5,9 +5,12 @@ module.exports = {
   targetExtension: ".sass",
   transform: function (request, reply) {
     Sass.render({
-      data: request,
+      data: request.content,
       success: function (result) {
-        reply(null, result.css);
+        reply(null, {
+          content: result.css,
+          encoding: "utf8"
+        });
       },
       error: reply,
       indentedSyntax: true,

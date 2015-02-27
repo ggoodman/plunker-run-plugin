@@ -22,7 +22,11 @@ module.exports = {
   targetExtension: ".md",
   transform: function (request, reply) {
     try {
-      var html = md.render(request);
+      var result = md.render(request.content);
+      var response = {
+        content: result,
+        encoding: "utf8",
+      };
     } catch (err) {
       
       return process.nextTick(function () {
@@ -31,7 +35,7 @@ module.exports = {
     }
     
     return process.nextTick(function () {
-      reply(null, html);
+      reply(null, response);
     });
   }
 };

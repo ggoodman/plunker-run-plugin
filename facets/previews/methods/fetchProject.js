@@ -59,7 +59,8 @@ module.exports = function (plunkId, next) {
           case 'file':
             entries.push({
               path: path.filter(Boolean).join("/"),
-              content: new Buffer(entry.content, entry.encoding),
+              content: entry.content,
+              encoding: entry.encoding,
             });
         }
       };

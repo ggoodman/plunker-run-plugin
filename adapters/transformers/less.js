@@ -4,10 +4,13 @@ module.exports = {
   testFilename: /\.css$/,
   targetExtension: ".less",
   transform: function (request, reply) {
-    Less.render(request, function (e, output) {
+    Less.render(request.content, function (e, output) {
       if (e) return reply(e);
       
-      reply(null, output.css);
+      reply(null, {
+        content: output.css,
+        encoding: "utf8",
+      });
     });
   }
 };

@@ -9,7 +9,11 @@ module.exports = {
   targetExtension: ".ls",
   transform: function (request, reply) {
     try {
-      var response = LiveScript.compile(request, compileOptions);
+      var result = LiveScript.compile(request.content, compileOptions);
+      var response = {
+        content: result.code,
+        encoding: "utf8",
+      };
     } catch (err) {
       
       return process.nextTick(function () {

@@ -9,7 +9,11 @@ module.exports = {
   targetExtension: ".6to5.js",
   transform: function (request, reply) {
     try {
-      var response = Compiler.transform(request, compileOptions);
+      var result = Compiler.transform(request.content, compileOptions);
+      var response = {
+        content: result.code,
+        encoding: "utf8",
+      };
     } catch (err) {
       
       return process.nextTick(function () {
@@ -18,7 +22,7 @@ module.exports = {
     }
     
     return process.nextTick(function () {
-      reply(null, response.code);
+      reply(null, response);
     });
   }
 };

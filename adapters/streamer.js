@@ -53,7 +53,7 @@ exports.init = function (server, options) {
           .finally(function () {
             var end = Date.now();
             
-            console.log("log", message + " (" + (end - start) + "ms)");
+            request.log("log", message + " (" + (end - start) + "ms)");
           });
         
         return promise;
@@ -73,11 +73,12 @@ exports.init = function (server, options) {
             
             if (!candidate) throw new Boom.notFound();
             
-            return transform(clientResponse.content)
-              .then(function (transformedContent) {
+            return transform(clientResponse)
+              .then(function (transformedResponse) {
                 var mime = Mime.lookup(candidate.requestPath) || "text/plain";
+                var content = new Buffer(transformedResponse.content, transformedResponse.encoding);
                 
-                reply(transformedContent)
+                reply(content)
                   // .header("cache-control", "private, must-revalidate")
                   .header("last-modified", clientResponse.lastModified)
                   .type(mime);

@@ -5,10 +5,14 @@ var _ = require("lodash");
 exports.register = function (server, options, next) {
   Promise.promisifyAll(server);
   
+  var cachePolicy = {
+    expiresIn: 1000 * 60,
+  };
+  
   server.bind({config: options.config, server: server});
   
-  server.method("previews.fetchLegacyPlunk", require("./methods/fetchLegacyPlunk"));
-  server.method("previews.fetchProject", require("./methods/fetchProject"));
+  server.method("previews.fetchLegacyPlunk", require("./methods/fetchLegacyPlunk"), { cache: cachePolicy });
+  server.method("previews.fetchProject", require("./methods/fetchProject"), { cache: cachePolicy });
   
   server.route({ method: "GET", path: "/plunks/{plunkId}/{path*}", config: require("./routes/handleLegacyPlunk") });
   server.route({ method: "GET", path: "/project/{plunkId}/{path*}", config: require("./routes/handleProject") });

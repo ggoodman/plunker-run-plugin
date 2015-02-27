@@ -11,7 +11,11 @@ module.exports = {
   targetExtension: ".es6.js",
   transform: function (request, reply) {
     try {
-      var response = compiler.compile(request);
+      var result = compiler.compile(request.content);
+      var response = {
+        content: result,
+        encoding: "utf8",
+      };
     } catch (err) {
       
       return process.nextTick(function () {

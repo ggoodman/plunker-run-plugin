@@ -9,7 +9,11 @@ module.exports = {
   targetExtension: ".coffee",
   transform: function (request, reply) {
     try {
-      var response = Coffee.compile(request, compileOptions);
+      var result = Coffee.compile(request.content, compileOptions);
+      var response = {
+        content: result,
+        encoding: "utf8",
+      };
     } catch (err) {
       
       return process.nextTick(function () {

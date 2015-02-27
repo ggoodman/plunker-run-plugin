@@ -9,7 +9,11 @@ module.exports = {
   targetExtension: ".jsx",
   transform: function (request, reply) {
     try {
-      var response = React.transform(request, compileOptions);
+      var result = React.transform(request.content, compileOptions);
+      var response = {
+        content: result,
+        encoding: "utf8",
+      };
     } catch (err) {
       
       return process.nextTick(function () {

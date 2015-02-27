@@ -21,7 +21,8 @@ module.exports = function (plunkId, next) {
       return _.map(plunk.files, function (entry) {
         return {
           path: (entry.filename || "").toLowerCase(),
-          content: new Buffer(entry.content, "utf8"),
+          content: entry.content,
+          encoding: "utf8",
         };
       });
     })

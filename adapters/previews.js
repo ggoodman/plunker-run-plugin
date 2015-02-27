@@ -10,8 +10,7 @@ var _ = require("lodash");
 exports.init = function (server, options) {
   
   
-  function Preview (key, entries) {
-    this.key = key;
+  function Preview (entries) {
     this.entries = entries;
   }
   
@@ -38,7 +37,7 @@ exports.init = function (server, options) {
     if (!options) options = {};
     else if (_.isFunction(options)) options = {getter: options};
     
-    if (!_.isFunction(options.getter)) options.getter = Cache.get.bind(Cache);
+    if (!_.isFunction(options.getter)) options.getter = _.identity;
     
     return new Promise(function (resolve, reject) {
       var candidates = Transform.getPathCandidates([path.toLowerCase()]);
@@ -49,15 +48,14 @@ exports.init = function (server, options) {
       }
       
       var transform = Promise.promisify(found.transformer.transform);
-      var complete = function (content) {
+      var complete = function (entry) {
         return resolve({
-          content: content,
+          content: new Buffer(entry.content, entry.encoding),
           type: Mime.lookup(found.requestPath) || "text/plain",
         });
       };
       
       return Promise.resolve(options.getter(found.entry))
-        .call("toString", "utf8")
         .then(transform)
         .then(complete)
         .catch(reject);
@@ -65,34 +63,17 @@ exports.init = function (server, options) {
   };
   
   
-  exports.create = function (key, entries) {
-    return Promise.map(entries, function (entry) {
-      var shasum = Crypto.createHash('sha1');
-      
-      shasum.update(entry.content);
-      
-      entry.key = ["files", shasum.digest("hex")].join(".");
-      
-      return Cache.set(entry.key, entry.content)
-        .return(entry);
-    })
-      .then(function (entries) {
-        var files = _(entries)
-          .indexBy("path")
-          .mapValues("key")
-          .value();
-          
-        return Cache.set(key, files);
-      })
-      .then(function (entries) {
-        return new Preview(key, entries);
+  exports.create = function (entries) {
+    return Promise.resolve(_.indexBy(entries, "path"))
+      .then(function (files) {
+        return new Preview(files);
       });
   };
   
   exports.open = function (key) {
     return Cache.get(key)
       .then(function (entries) {
-        return new Preview(key, entries);
+        return new Preview(entries);
       });
   };
   
@@ -100,7 +81,7 @@ exports.init = function (server, options) {
     return exports.open(prefix + "." + key)
       .catch(function () {
         return loader(key)
-          .then(function (entries) {
+          .spread(function (entries) {
             return exports.create(prefix + "." + key, entries);
           });
       });

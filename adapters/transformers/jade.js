@@ -1,6 +1,6 @@
 var Jade = require("jade");
 
-var renderOptions = {
+var compileOptions = {
   pretty: true,
 };
 
@@ -9,7 +9,11 @@ module.exports = {
   targetExtension: ".jade",
   transform: function (request, reply) {
     try {
-      var html = Jade.render(request, renderOptions);
+      var result = Jade.render(request.content, compileOptions);
+      var response = {
+        content: result,
+        encoding: "utf8",
+      };
     } catch (err) {
       
       return process.nextTick(function () {
@@ -18,7 +22,7 @@ module.exports = {
     }
     
     return process.nextTick(function () {
-      reply(null, html);
+      reply(null, response);
     });
   }
 };
