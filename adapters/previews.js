@@ -70,6 +70,11 @@ exports.init = function (server, options) {
       });
   };
   
+  exports.createCached = function (key, entries) {
+    return Cache.set(key, _.indexBy(entries, "path"))
+      .then(exports.create);
+  };
+  
   exports.open = function (key) {
     return Cache.get(key)
       .then(function (entries) {

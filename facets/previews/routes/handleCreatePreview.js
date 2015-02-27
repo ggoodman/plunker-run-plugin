@@ -28,12 +28,13 @@ module.exports = {
     var entries = _.map(request.payload.files, function (entry, path) {
       return {
         path: path.split("/").filter(Boolean).join("/").toLowerCase(),
-        content: new Buffer(entry.content, entry.encoding),
+        content: entry.content,
+        encoding: entry.encoding,
       };
     });
     
     
-    Previews.create(prefix + "." + key, entries)
+    Previews.createCached(prefix + "." + key, entries)
       .call("render", request.params.path)
       .then(function(rendered) {
         reply(rendered.content)
