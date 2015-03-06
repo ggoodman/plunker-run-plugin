@@ -9,7 +9,7 @@ var compilerOptions = {
 
 module.exports = {
   testFilename: /\.js$/,
-  targetExtension: ".es6.js",
+  targetExtension: ".ts",
   transform: function (request, reply) {
     var outputs = [];
     
