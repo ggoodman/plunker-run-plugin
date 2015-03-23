@@ -1,7 +1,12 @@
 var Traceur = require("traceur");
 
 var compileOptions = {
-  modules: "commonjs", // Is this right?
+    annotations: true,
+    memberVariables: true,
+    modules: "inline",
+    typeAssertions: false,
+    // typeAssertionModule: 'rtts_assert/rtts_assert',
+    types: true
 };
 
 var compiler = new Traceur.NodeCompiler(compileOptions);
