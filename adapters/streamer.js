@@ -14,6 +14,7 @@ exports.init = function (server, options) {
   var frontEndPath = __dirname + "/../static/streamer.js";
   var primus = new Primus(server.listener, {
     transformer: "sockjs",
+    requestTimeout: 30000,
   });
   
   // primus.use("mirage", require("mirage"));
