@@ -1,3 +1,4 @@
+var Fs = require("fs");
 var Traceur = require("traceur");
 
 var compileOptions = {
@@ -10,6 +11,7 @@ var compileOptions = {
 };
 
 var compiler = new Traceur.NodeCompiler(compileOptions);
+var runtime = Fs.readFileSync(Traceur.RUNTIME_PATH, "utf8");
 
 module.exports = {
   testFilename: /\.js$/,
@@ -18,7 +20,7 @@ module.exports = {
     try {
       var result = compiler.compile(request.content);
       var response = {
-        content: result,
+        content: runtime + "\n\n" + result,
         encoding: "utf8",
       };
     } catch (err) {
