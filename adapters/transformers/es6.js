@@ -4,7 +4,7 @@ var Traceur = require("traceur");
 var compileOptions = {
     annotations: true,
     memberVariables: true,
-    modules: "inline",
+    modules: "instantiate",
     typeAssertions: false,
     // typeAssertionModule: 'rtts_assert/rtts_assert',
     types: true
@@ -18,9 +18,9 @@ module.exports = {
   targetExtension: ".es6.js",
   transform: function (request, reply) {
     try {
-      var result = compiler.compile(request.content);
+      var result = compiler.compile(request.content, request.path.replace(/\.es6\.js$/, ""));
       var response = {
-        content: runtime + "\n\n" + result,
+        content: /*runtime + "\n\n" + */result,
         encoding: "utf8",
       };
     } catch (err) {

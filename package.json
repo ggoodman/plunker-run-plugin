@@ -14,6 +14,7 @@
     "good-console": "^4.1.0",
     "hapi": "^8.2.0",
     "highlight.js": "^8.4.0",
+    "html2hscript": "^1.0.4",
     "jade": "^1.9.2",
     "joi": "^5.1.0",
     "jsonwebtoken": "^3.2.2",

@@ -17,6 +17,7 @@ internals.transformers = [
   require("./transformers/6to5"),
   require("./transformers/es6"),
   require("./transformers/coffee"),
+  require("./transformers/hs"),
   require("./transformers/jade"),
   require("./transformers/jsx"),
   require("./transformers/less"),
