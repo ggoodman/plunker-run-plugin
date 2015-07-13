@@ -1,16 +1,12 @@
-var Stylus = require("stylus");
+var Bluebird = require('bluebird');
+var Stylus = require('stylus');
 
 module.exports = {
-  matches: /\.css$/,
-  provides: ".styl",
-  transform: function (request, reply) {
-    Stylus.render(request.content, function (err, css) {
-      if (err) return reply(err);
-      
-      reply(null, {
-        content: css,
-        encoding: "utf8",
-      });
-    });
+  matches: /\.styl$/,
+  provides: '.css',
+  transform: function (context) {
+    var render = Bluebird.promisify(Stylus.render, Stylus);
+    
+    return render(context.sourceContent);
   }
 };

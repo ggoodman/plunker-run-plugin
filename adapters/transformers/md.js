@@ -1,5 +1,5 @@
 var Highlight = require('highlight.js');
-var Markdown = require("markdown-it");
+var Markdown = require('markdown-it');
 
 var md = Markdown({
   highlight: function (str, lang) {
@@ -18,24 +18,9 @@ var md = Markdown({
 });
 
 module.exports = {
-  matches: /\.html?$/,
-  provides: ".md",
-  transform: function (request, reply) {
-    try {
-      var result = md.render(request.content);
-      var response = {
-        content: result,
-        encoding: "utf8",
-      };
-    } catch (err) {
-      
-      return process.nextTick(function () {
-        reply(err);
-      });
-    }
-    
-    return process.nextTick(function () {
-      reply(null, response);
-    });
+  matches: /\.md$/,
+  provides: '.html',
+  transform: function (context) {
+    return md.render(context.sourceContent);
   }
 };

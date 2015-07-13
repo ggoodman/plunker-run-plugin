@@ -8,6 +8,11 @@ var server = new Hapi.Server({
       json: {
         space: 2,
       },
+      payload: {
+        qs: {
+          allowDots: false,
+        }
+      }
     },
   },
 });
@@ -23,7 +28,7 @@ var plugins = [
       opsInterval: 1000 * 30,
       reporters: [{
         reporter: require('good-console'),
-        args:[{ log: '*', error: '*', ops: '*' }]
+        args:[{ log: '*', request: '*', error: '*', ops: '*' }]
       }],
     }
   }, {
@@ -36,7 +41,7 @@ server.connection({
   host: Lookup.get(config, "services.run.public.host", "localhost"),
   address: "0.0.0.0",
   port: Lookup.get(config, "services.run.local.port", 8080),
-  labels: ["run"],
+  labels: ["run"], 
 });
 
 server.register(plugins, function (err) {

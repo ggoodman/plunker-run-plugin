@@ -1,19 +1,21 @@
-var Sass = require("node-sass");
+var Bluebird = require('bluebird');
+var Sass = require('node-sass');
 
 module.exports = {
-  matches: /\.css$/,
-  provides: ".sass",
-  transform: function (request, reply) {
-    Sass.render({
-      data: request.content,
-      success: function (result) {
-        reply(null, {
-          content: result.css,
-          encoding: "utf8"
-        });
-      },
-      error: reply,
-      indentedSyntax: true,
+  matches: /\.s(a|c)$/,
+  provides: '.css',
+  transform: function (context) {
+    var sassRx = /\.sass$/;
+    var indentedSyntax = sassRx.test(context.requestPath);
+    return new Bluebird(function (resolve, reject) {
+      Sass.render({
+        data: context.sourceContent,
+        success: function (result) {
+          resolve(result.css);
+        },
+        error: reject,
+        indentedSyntax: indentedSyntax,
+      });
     });
   }
 };

@@ -1,16 +1,13 @@
-var Less = require("less");
+var Bluebird = require('bluebird');
+var Less = require('less');
 
 module.exports = {
-  matches: /\.css$/,
-  provides: ".less",
-  transform: function (request, reply) {
-    Less.render(request.content, function (e, output) {
-      if (e) return reply(e);
-      
-      reply(null, {
-        content: output.css,
-        encoding: "utf8",
-      });
-    });
+  matches: /\.less$/,
+  provides: '.css',
+  transform: function (context) {
+    var render = Bluebird.promisify(Less.render, Less);
+    
+    return render(context.sourceContent)
+      .get('css');
   }
 };

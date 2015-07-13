@@ -1,5 +1,6 @@
 var Bluebird = require('bluebird');
 var Boom = require('boom');
+var Jsonic = require('jsonic');
 var Mime = require('mime-types');
 var Path = require('path');
 var _ = require('lodash');
@@ -27,26 +28,20 @@ exports.register.attributes = {
 
 var directives = {
   babel: require('./transformers/babel.js'),
-  // traceur: require('./transformers/es6.js'),
   // typescript: require('./transformers/ts.js'),
 };
 
 
 var transformers = [
   directives.babel,
-  require('./transformers/webtask.js'),
-  // require('./transformers/coffee.js'),
-  // directives.traceur,
-  // require('./transformers/hs.js'),
-  // require('./transformers/jade.js'),
-  // require('./transformers/jsx.js'),
-  // require('./transformers/less.js'),
-  // require('./transformers/ls.js'),
-  // require('./transformers/md.js'),
-  // require('./transformers/sass.js'),
-  // require('./transformers/scss.js'),
-  // require('./transformers/styl.js'),
   // directives.typescript,
+  require('./transformers/less.js'),
+  require('./transformers/sass.js'),
+  require('./transformers/md.js'),
+  require('./transformers/coffee.js'),
+  require('./transformers/jade.js'),
+  require('./transformers/styl.js'),
+  require('./transformers/webtask.js'),
 ];
 
 function Preview (type, id, files) {
@@ -78,7 +73,7 @@ Preview.fromJson = function (id, json) {
 Preview.fromPlunk = function (id, json) {
   var files = _(json.files)
     .mapValues('content')
-    .mapKeys(function (path) {
+    .mapKeys(function (content, path) {
       return path.split('/').filter(Boolean).join('/');
     })
     .value();
@@ -94,7 +89,7 @@ Preview.render = function (request, reply) {
   
   if (!preview) throw Boom.notFound('Preview has expired or project does not exist.');
   
-  var candidates = requestPath.slice(-1) === '/'
+  var candidates = requestPath.slice(-1) === '/' || !requestPath
     ? ['index.html', 'README.html', 'demo.html'].map(function (index) {
       return requestPath + index;
     })
@@ -102,6 +97,9 @@ Preview.render = function (request, reply) {
     
   Bluebird
     .map(candidates, render)
+    .filter(function (rendered) {
+      return typeof rendered !== 'undefined';
+    })
     .any()
     .then(normalize)
     .catch(Bluebird.RangeError, function (errs) {
@@ -115,22 +113,52 @@ Preview.render = function (request, reply) {
     
     if (typeof content !== 'undefined') {
       if (Path.extname(path) === '.js') {
-        var matches = content.match(/^\s*"use ([^"]+)";?/);
-        var directive = matches && directives[matches[1]];
+        var matches = content.match(/^\s*"use (\w+)(?:\(([^"\)]+)\))?";?/);
         
-        if (directive) {
-          return directive.transform({
-            config: config,
-            preview: preview,
-            request: request,
-            requestPath: path,
-            sourcePath: path,
-            sourceContent: content,
-          });
+        if (matches && directives[matches[1]]) {
+          var directive = directives[matches[1]];
+          var compileOptions = {};
+          
+          if (matches[2]) {
+            try {
+              compileOptions = Jsonic(matches[2]);
+            } catch (e) {
+              preview.logs.push({
+                source: 'directive options',
+                err: e,
+              });
+            }
+          }
+          
+          if (directive) {
+            var context = {
+              compileOptions: compileOptions,
+              config: config,
+              preview: preview,
+              request: request,
+              requestPath: path,
+              sourcePath: path,
+              sourceContent: content,
+            };
+            
+            return Bluebird.try(directive.transform, [context], directive)
+              .catch(function (err) {
+                preview.logs.push({
+                  source: directive.name,
+                  data: err,
+                });
+                throw Boom.badRequest('Compilation error: ' + err.message, err);
+              });
+          }
         }
       }
       
-      return content;
+      return {
+        headers: {
+          'content-type': Mime.lookup(path) || 'text/plain',
+        },
+        payload: content,
+      };
     }
     
     // Start a competitive race between transformers to handle the request
@@ -159,7 +187,17 @@ Preview.render = function (request, reply) {
           sourceContent: sourceContent,
         };
         
-        return transformer.transform(context);
+        return Bluebird.try(transformer.transform, [context], transformer)
+          .catch(function (err) {
+            preview.logs.push({
+              source: transformer.name,
+              data: err,
+            });
+            throw Boom.badRequest('Compilation error: ' + err.message, err);
+          });
+      })
+      .catch(Bluebird.RangeError, function (errs) {
+        return;
       });
   }
   
