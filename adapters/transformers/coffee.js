@@ -5,8 +5,8 @@ var compileOptions = {
 };
 
 module.exports = {
-  testFilename: /\.js$/,
-  targetExtension: ".coffee",
+  matches: /\.js$/,
+  provides: ".coffee",
   transform: function (request, reply) {
     try {
       var result = Coffee.compile(request.content, compileOptions);

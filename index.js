@@ -9,15 +9,19 @@ exports.register = function (server, options, next) {
   server.log("info", "Registering run plugin");
   
   var loadAdaptors = function () {
-    return Promise.all([
-      require("./adapters/cache").init(server, options),
-      require("./adapters/previews").init(server, options),
-      require("./adapters/streamer").init(server, options),
-      require("./adapters/transform").init(server, options),
-    ]);
+    return server.registerAsync([{
+      register: require("./adapters/plunks"),
+      options: options,
+    }, {
+      register: require("./adapters/cache"),
+      options: options,
+    }, {
+      register: require("./adapters/previews"),
+      options: options,
+    }]);
   };
 
-  var loadPlugins = function () {
+  var loadFacets = function () {
     return server.registerAsync([{
       register: require("./facets/previews"),
       options: options,
@@ -35,7 +39,7 @@ exports.register = function (server, options, next) {
   
   
   loadAdaptors()
-    .then(loadPlugins)
+    .then(loadFacets)
     .nodeify(next);
   
 };

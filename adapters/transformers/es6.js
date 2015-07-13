@@ -14,8 +14,8 @@ var compiler = new Traceur.NodeCompiler(compileOptions);
 var runtime = Fs.readFileSync(Traceur.RUNTIME_PATH, "utf8");
 
 module.exports = {
-  testFilename: /\.js$/,
-  targetExtension: ".es6.js",
+  matches: /\.js$/,
+  provides: ".es6.js",
   transform: function (request, reply) {
     try {
       var result = compiler.compile(request.content, request.path.replace(/\.es6\.js$/, ""));

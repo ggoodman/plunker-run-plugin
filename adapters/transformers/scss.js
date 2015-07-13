@@ -1,8 +1,8 @@
 var Sass = require("node-sass");
 
 module.exports = {
-  testFilename: /\.css$/,
-  targetExtension: ".scss",
+  matches: /\.css$/,
+  provides: ".scss",
   transform: function (request, reply) {
     Sass.render({
       data: request.content,

@@ -18,8 +18,8 @@ var md = Markdown({
 });
 
 module.exports = {
-  testFilename: /\.html?$/,
-  targetExtension: ".md",
+  matches: /\.html?$/,
+  provides: ".md",
   transform: function (request, reply) {
     try {
       var result = md.render(request.content);

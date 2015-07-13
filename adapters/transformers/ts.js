@@ -8,8 +8,8 @@ var compilerOptions = {
 
 
 module.exports = {
-  testFilename: /\.js$/,
-  targetExtension: ".ts",
+  matches: /\.js$/,
+  provides: ".ts",
   transform: function (request, reply) {
     var outputs = [];
     

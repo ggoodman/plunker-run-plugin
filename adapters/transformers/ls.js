@@ -5,8 +5,8 @@ var compileOptions = {
 };
 
 module.exports = {
-  testFilename: /\.js$/,
-  targetExtension: ".ls",
+  matches: /\.js$/,
+  provides: ".ls",
   transform: function (request, reply) {
     try {
       var result = LiveScript.compile(request.content, compileOptions);

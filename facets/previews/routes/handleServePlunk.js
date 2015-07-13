@@ -2,15 +2,19 @@ var Joi = require('joi');
 var _ = require('lodash');
 
 
+
 module.exports = {
   validate: {
     params: {
-      previewId: Joi.string().alphanum().required(),
+      plunkId: Joi.string().alphanum().required(),
       path: Joi.string().regex(/^\/?[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*(?:\/[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).allow('').default('').optional(),
     },
   },
   pre: [{
-    method: 'cache.get(params.previewId)',
+    method: 'plunks.load(params.plunkId)',
+    assign: 'plunk',
+  }, {
+    method: 'previews.fromPlunk(params.plunkId, pre.plunk)',
     assign: 'preview',
   }, {
     method: 'previews.render',

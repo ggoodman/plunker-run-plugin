@@ -5,8 +5,8 @@ var compileOptions = {
 };
 
 module.exports = {
-  testFilename: /\.js$/,
-  targetExtension: ".jsx",
+  matches: /\.js$/,
+  provides: ".jsx",
   transform: function (request, reply) {
     try {
       var result = React.transform(request.content, compileOptions);

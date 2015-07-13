@@ -1,6 +1,6 @@
 module.exports = {
-  testFilename: /$/,
-  targetExtension: "",
+  matches: /$/,
+  provides: "",
   transform: function (request, reply) {
     // Do nothing, asynchronously
     process.nextTick(function () {

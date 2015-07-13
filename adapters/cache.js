@@ -1,37 +1,27 @@
-var Boom = require("boom");
-var Lookup = require("object-path");
-var LRU = require("lru-cache");
-var Promise = require("bluebird");
-var _ = require("lodash");
+var Bluebird = require('bluebird');
+var _ = require('lodash');
 
-
-exports.init = function (server, options) {
-  var cache = new LRU({
-    max: Lookup.get(server.config, "services.run.cacheSize", 1024 * 400),
-    maxAge: Lookup.get(server.config, "services.run.maxAge", 1000 * 60 * 30), // 30min
-    length: function (item) {
-      if (item instanceof Buffer) return item.length;
-      
-      return JSON.stringify(item).length;
-    }
+exports.register = function (server, options, next) {
+  Bluebird.promisifyAll(server);
+  
+  server.log(['info', 'startup'], 'Initializing cache');
+  
+  var ttl = 1000 * 60 * 5;
+  var cache = server.cache({
+    expiresIn: ttl,
+    segment: 'previews',
   });
   
-  exports.del = function (key) {
-    cache.del(key);
-    
-    return Promise.resolve();
-  };
+  server.expose('cache', cache);
+  server.expose('ttl', ttl);
   
-  exports.get = function (key) {
-    var value = cache.get(key);
-    
-    if (value) return Promise.resolve(value);
-    else return Promise.reject(Boom.notFound());
-  };
+  server.method('cache.get', cache.get.bind(cache));
+  server.method('cache.set', cache.set.bind(cache));
   
-  exports.set = function (key, value) {
-    cache.set(key, value);
-    
-    return Promise.resolve(value);
-  };
+  next();
+};
+
+exports.register.attributes = {
+  'name': 'cache',
+  'version': '1.0.0',
 };

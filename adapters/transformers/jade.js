@@ -5,8 +5,8 @@ var compileOptions = {
 };
 
 module.exports = {
-  testFilename: /\.html?$/,
-  targetExtension: ".jade",
+  matches: /\.html?$/,
+  provides: ".jade",
   transform: function (request, reply) {
     try {
       var result = Jade.render(request.content, compileOptions);
