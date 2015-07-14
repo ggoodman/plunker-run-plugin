@@ -1,12 +1,17 @@
 var Bluebird = require('bluebird');
 var Boom = require('boom');
+var Events = require('events');
 var Jsonic = require('jsonic');
 var Mime = require('mime-types');
 var Path = require('path');
 var _ = require('lodash');
 
+var logs = new Events.EventEmitter();
+
+
 exports.register = function (server, options, next) {
   Bluebird.promisifyAll(server);
+  
   
   server.log(['info', 'startup'], 'Initializing previews service');
   
@@ -14,6 +19,9 @@ exports.register = function (server, options, next) {
     config: options.config,
   });
   
+  server.expose('logs', logs);
+  
+  server.method('previews.fromCache', Preview.fromCache, {callback: false});
   server.method('previews.fromJson', Preview.fromJson, {callback: false});
   server.method('previews.fromPlunk', Preview.fromPlunk, {callback: false});
   server.method('previews.render', Preview.render);
@@ -49,19 +57,23 @@ var transformers = _.map({
   return transformer;
 });
 
-function Preview (type, id, files) {
+function Preview (type, id, files, timestamp) {
   this.files = files;
   this.id = id;
-  this.logs = [];
   this.type = type;
+  this.timestamp = timestamp || Date.now();
 }
 
-Preview.prototype.clear = function () {
-  this.logs.length = 0;
+Preview.prototype.log = function (data) {
+  logs.emit('log', {
+    type: this.type,
+    id: this.id,
+    data: data,
+  });
 };
 
-Preview.prototype.log = function (obj) {
-  this.logs.push(obj);
+Preview.fromCache = function (data) {
+  return new Preview(data.type, data.id, data.files, data.timestamp);
 };
 
 Preview.fromJson = function (id, json) {
@@ -118,7 +130,8 @@ Preview.render = function (request, reply) {
     
     if (typeof content !== 'undefined') {
       if (Path.extname(path) === '.js') {
-        var matches = content.match(/^\s*"use (\w+)(?:\(([^"\)]+)\))?";?/);
+        var directiveRx = /^\s*"use (\w+)(?:\s*\(([^"\)]+)\))?";?/;
+        var matches = content.match(directiveRx);
         
         if (matches && directives[matches[1]]) {
           var transformer = directives[matches[1]];
@@ -128,12 +141,15 @@ Preview.render = function (request, reply) {
             try {
               compileOptions = Jsonic(matches[2]);
             } catch (e) {
-              preview.logs.push({
+              preview.log({
                 source: 'directive options',
                 err: e,
               });
             }
           }
+          
+          // Strip out 'use' directive
+          content = content.replace(directiveRx, '');
           
           if (transformer) {
             var context = {
@@ -150,7 +166,7 @@ Preview.render = function (request, reply) {
             
             return Bluebird.try(transformer.transform, [context], transformer)
               .catch(function (err) {
-                preview.logs.push({
+                preview.log({
                   source: transformer.name,
                   data: err,
                 });
@@ -198,7 +214,7 @@ Preview.render = function (request, reply) {
         
         return Bluebird.try(transformer.transform, [context], transformer)
           .catch(function (err) {
-            preview.logs.push({
+            preview.log({
               source: transformer.name,
               data: err,
             });

@@ -3,7 +3,7 @@ var Compiler = require('babel');
 var _ = require('lodash');
 
 var defaultCompileOptions = {
-  stage: 0,
+  stage: 2,
 };
 
 

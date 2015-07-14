@@ -32,6 +32,7 @@ module.exports = {
   handler: function (request, reply) {
     var rendered = request.pre.rendered;
     var response = reply(rendered.payload)
+      .etag(request.pre.preview.timestamp)
       .header("X-XSS-Protection", 0) // Since we send code over the wire
       .encoding(rendered.encoding);
       

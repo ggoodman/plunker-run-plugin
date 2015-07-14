@@ -23,6 +23,7 @@ module.exports = {
   handler: function (request, reply) {
     var rendered = request.pre.rendered;
     var response = reply(rendered.payload)
+      .etag(request.pre.preview.timestamp)
       .encoding(rendered.encoding);
       
     _.forEach(rendered.headers, function (val, key) {
