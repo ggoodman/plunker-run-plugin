@@ -18,6 +18,9 @@ exports.register = function (server, options, next) {
     }, {
       register: require("./adapters/previews"),
       options: options,
+    }, {
+      register: require("./adapters/analytics"),
+      options: options,
     }]);
   };
 

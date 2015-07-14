@@ -29,20 +29,25 @@ exports.register.attributes = {
 var directives = {
   babel: require('./transformers/babel.js'),
   // typescript: require('./transformers/ts.js'),
+  traceur: require('./transformers/traceur.js'),
 };
 
 
-var transformers = [
-  directives.babel,
-  // directives.typescript,
-  require('./transformers/less.js'),
-  require('./transformers/sass.js'),
-  require('./transformers/md.js'),
-  require('./transformers/coffee.js'),
-  require('./transformers/jade.js'),
-  require('./transformers/styl.js'),
-  require('./transformers/webtask.js'),
-];
+var transformers = _.map({
+  babel: directives.babel,
+  // typescript: directives.typescript,
+  traceur: directives.traceur,
+  less: require('./transformers/less.js'),
+  sass: require('./transformers/sass.js'),
+  markdown: require('./transformers/md.js'),
+  'coffee-script': require('./transformers/coffee.js'),
+  jade: require('./transformers/jade.js'),
+  stylus: require('./transformers/styl.js'),
+  webtask: require('./transformers/webtask.js'),
+}, function (transformer, name) {
+  transformer.name = name;
+  return transformer;
+});
 
 function Preview (type, id, files) {
   this.files = files;
@@ -116,7 +121,7 @@ Preview.render = function (request, reply) {
         var matches = content.match(/^\s*"use (\w+)(?:\(([^"\)]+)\))?";?/);
         
         if (matches && directives[matches[1]]) {
-          var directive = directives[matches[1]];
+          var transformer = directives[matches[1]];
           var compileOptions = {};
           
           if (matches[2]) {
@@ -130,7 +135,7 @@ Preview.render = function (request, reply) {
             }
           }
           
-          if (directive) {
+          if (transformer) {
             var context = {
               compileOptions: compileOptions,
               config: config,
@@ -141,10 +146,12 @@ Preview.render = function (request, reply) {
               sourceContent: content,
             };
             
-            return Bluebird.try(directive.transform, [context], directive)
+            request.visitor.event('previews', 'compile:directive', transformer.name, 1);
+            
+            return Bluebird.try(transformer.transform, [context], transformer)
               .catch(function (err) {
                 preview.logs.push({
-                  source: directive.name,
+                  source: transformer.name,
                   data: err,
                 });
                 throw Boom.badRequest('Compilation error: ' + err.message, err);
@@ -186,6 +193,8 @@ Preview.render = function (request, reply) {
           sourcePath: sourcePath,
           sourceContent: sourceContent,
         };
+            
+        request.visitor.event('previews', 'compile:implicit', transformer.name, 1);
         
         return Bluebird.try(transformer.transform, [context], transformer)
           .catch(function (err) {
