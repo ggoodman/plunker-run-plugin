@@ -8,10 +8,20 @@ var defaultCompileOptions = {
 
 
 module.exports = {
-  matches: /\.(6to5|babel)\.js$/,
+  matches: /(\.(6to5|babel)\.js|\.jsx)$/,
   provides: ".js",
   transform: function (context) {
     var options = _.defaults({}, context.compileOptions, defaultCompileOptions);
+    
+    var babelrc = context.preview.files['.babelrc'];
+    
+    if (typeof babelrc !== 'undefined') {
+      try {
+        babelrc = JSON.parse(babelrc);
+        
+        _.extend(options, babelrc);
+      } catch (__) {}
+    }
     
     try {
       var result = Compiler.transform(context.sourceContent, options);
