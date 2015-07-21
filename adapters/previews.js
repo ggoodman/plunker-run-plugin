@@ -36,14 +36,14 @@ exports.register.attributes = {
 
 var directives = {
   babel: require('./transformers/babel.js'),
-  // typescript: require('./transformers/ts.js'),
+  typescript: require('./transformers/typescript.js'),
   traceur: require('./transformers/traceur.js'),
 };
 
 
 var transformers = _.map({
   babel: directives.babel,
-  // typescript: directives.typescript,
+  typescript: directives.typescript,
   traceur: directives.traceur,
   less: require('./transformers/less.js'),
   sass: require('./transformers/sass.js'),
@@ -73,6 +73,8 @@ Preview.prototype.log = function (data) {
 };
 
 Preview.fromCache = function (data) {
+  if (!data) throw Boom.notFound('Preview has expired or project does not exist.');
+  
   return new Preview(data.type, data.id, data.files, data.timestamp);
 };
 
@@ -202,6 +204,7 @@ Preview.render = function (request, reply) {
       .any()
       .spread(function (transformer, sourcePath, sourceContent) {
         var context = {
+          compileOptions: {},
           config: config,
           preview: preview,
           request: request,

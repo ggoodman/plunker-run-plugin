@@ -39,7 +39,7 @@ module.exports = {
         
         if (res.statusCode >= 300) {
           return Wreck.read(res, {json: true, timeout: 1000, maxBytes: 1024 * 1024}, function (err, payload) {
-            context.preview.logs.push({
+            context.preview.log({
               source: 'webtask',
               data: payload,
             });

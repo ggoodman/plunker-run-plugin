@@ -11,6 +11,9 @@ module.exports = {
   },
   pre: [{
     method: 'cache.get(params.previewId)',
+    assign: 'cached',
+  }, {
+    method: 'previews.fromCache(pre.cached)',
     assign: 'preview',
   }, {
     method: 'previews.render',

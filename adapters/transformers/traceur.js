@@ -18,10 +18,20 @@ module.exports = {
   provides: '.js',
   transform: function (context) {
     var options = _.defaults({}, context.compileOptions, defaultCompileOptions);
-    var compiler = new Traceur.NodeCompiler(options);
-    var compiled = compiler.compile(context.requestContent, context.requestPath.replace(/\.es6\.js$/, ''));
+    var traceurrc = context.preview.files['.traceurrc'];
     
-    if (context.compileOptions.runtime) compiled = runtime + '\n\n' + compiled;
+    if (typeof traceurrc !== 'undefined') {
+      try {
+        traceurrc = JSON.parse(traceurrc);
+        
+        _.extend(options, traceurrc);
+      } catch (__) {}
+    }
+    
+    var compiler = new Traceur.NodeCompiler(options);
+    var compiled = compiler.compile(context.sourceContent, context.requestPath.replace(/\.es6\.js$/, ''));
+    
+    if (options.runtime) compiled = runtime + '\n\n' + compiled;
     
     return compiled;
   }

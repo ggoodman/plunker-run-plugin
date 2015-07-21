@@ -9,7 +9,7 @@ module.exports = {
       path: Joi.string().regex(/^\/?[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*(?:\/[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).allow('').default('').optional(),
     },
     payload: Joi.object().keys({
-      sessid: Joi.string().required(),
+      sessid: Joi.string().optional(),
       files: Joi.object().pattern(
         /^\/?[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*(?:\/[a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/,
         Joi.object().keys({

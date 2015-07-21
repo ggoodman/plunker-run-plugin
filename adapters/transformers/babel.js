@@ -28,7 +28,7 @@ module.exports = {
       
       return result.code;
     } catch (err) {
-      context.preview.logs.push({
+      context.preview.log({
         source: 'babel',
         data: err,
       });
