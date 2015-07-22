@@ -3,7 +3,12 @@ var Typescript = require('typescript');
 var _ = require('lodash');
 
 var defaultCompileOptions = _.extend(Typescript.getDefaultCompilerOptions(), {
-  
+  allowNonTsExtensions: true,
+  isolatedModules: true,
+  module: Typescript.ModuleKind.UMD,
+  noLib: true,
+  noResolve: false,
+  target: Typescript.ScriptTarget.ES3,
 });
 
 
@@ -19,25 +24,25 @@ module.exports = {
       try {
         tsconfig = JSON.parse(tsconfig);
         
-        _.extend(options, tsconfig);
+        _.extend(options, tsconfig.compilerOptions);
       } catch (__) {}
     }
     
-    options.out = context.requestPath;
+    context.preview.files[context.requestPath] = '';
     
-    var compilerHost = Typescript.createCompilerHost({
+    var compilerHost = {
       getSourceFile: function (filename) {
         return Typescript.createSourceFile(filename, context.preview.files[filename], options.target);
       },
       writeFile: function (filename, text) {
-        context.preview.files[filename] = text;
+        context.preview.files[context.requestPath] += text;
       },
       getDefaultLibFileName: _.constant('lib.d.ts'),
       useCaseSensitiveFileNames: _.constant(false),
       getCanonicalFileName: _.identity,
       getCurrentDirectory: _.constant(''),
       getNewLine: _.constant('\n'),
-    });
+    };
     
     var program = Typescript.createProgram([context.sourcePath], options, compilerHost);
     var result = program.emit();
@@ -48,20 +53,27 @@ module.exports = {
       var lastError = 'Compilation error';
       
       diagnostics.forEach(function (diagnostic) {
-        var coords = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-        
         lastError = Typescript.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
         
-        context.preview.log({
+        var msg = {
           source: 'typescript',
-          filename: diagnostics.file.fileName,
-          line: coords.line,
-          position: coords.character,
           data: lastError,
-        });
+        };
+        
+        if (diagnostic.file) {
+          var coords = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+          
+          msg.filename = diagnostic.file.fileName;
+          msg.line = coords.line;
+          msg.position = coords.character;
+        }
+        
+        context.preview.log(msg);
       });
-      
-      throw Boom.badRequest('Compilation failed: ' + lastError, lastError);
+    }
+    
+    if (!context.preview.files[context.requestPath]) {
+      throw new Boom.badRequest('Compilation failed: ' + lastError, lastError);
     }
 
     return context.preview.files[context.requestPath];
