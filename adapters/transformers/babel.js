@@ -33,7 +33,7 @@ module.exports = {
         data: err,
       });
       
-      throw Boom.badRequest('Compilation failed: ' + err.message, err);
+      throw new Boom.badRequest('Compilation failed: ' + err.message, err);
     }
   }
 };

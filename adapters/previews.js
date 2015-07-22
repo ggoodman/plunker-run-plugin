@@ -73,7 +73,7 @@ Preview.prototype.log = function (data) {
 };
 
 Preview.fromCache = function (data) {
-  if (!data) throw Boom.notFound('Preview has expired or project does not exist.');
+  if (!data) throw new Boom.notFound('Preview has expired or project does not exist.');
   
   return new Preview(data.type, data.id, data.files, data.timestamp);
 };
@@ -106,7 +106,7 @@ Preview.render = function (request, reply) {
   var preview = request.pre.preview;
   var requestPath = request.params.path;
   
-  if (!preview) throw Boom.notFound('Preview has expired or project does not exist.');
+  if (!preview) throw new Boom.notFound('Preview has expired or project does not exist.');
   
   var candidates = requestPath.slice(-1) === '/' || !requestPath
     ? ['index.html', 'README.html', 'demo.html'].map(function (index) {
@@ -122,7 +122,7 @@ Preview.render = function (request, reply) {
     .any()
     .then(normalize)
     .catch(Bluebird.RangeError, function (errs) {
-      throw Boom.notFound();
+      throw new Boom.notFound();
     })
     .nodeify(reply);
   
@@ -172,7 +172,7 @@ Preview.render = function (request, reply) {
                   source: transformer.name,
                   data: err,
                 });
-                throw Boom.badRequest('Compilation error: ' + err.message, err);
+                throw new Boom.badRequest('Compilation error: ' + err.message, err);
               });
           }
         }
@@ -221,7 +221,7 @@ Preview.render = function (request, reply) {
               source: transformer.name,
               data: err,
             });
-            throw Boom.badRequest('Compilation error: ' + err.message, err);
+            throw new Boom.badRequest('Compilation error: ' + err.message, err);
           });
       })
       .catch(Bluebird.RangeError, function (errs) {
