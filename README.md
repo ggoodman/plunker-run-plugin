@@ -4,6 +4,7 @@ Plunker is designed to make it as easy as possible for you to
 work in compiled web languages.
 
 There are two ways that Plunker will trigger compilation:
+
 1. The `implicit` mode
 2. The `explicit` mode
 
