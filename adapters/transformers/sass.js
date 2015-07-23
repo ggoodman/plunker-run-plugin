@@ -2,7 +2,7 @@ var Bluebird = require('bluebird');
 var Sass = require('node-sass');
 
 module.exports = {
-  matches: /\.s(a|c)$/,
+  matches: /\.s(a|c)ss$/,
   provides: '.css',
   transform: function (context) {
     var sassRx = /\.sass$/;
