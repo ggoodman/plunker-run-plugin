@@ -43,15 +43,16 @@ var directives = {
 
 var transformers = _.map({
   babel: directives.babel,
+  base64: require('./transformers/base64'),
   typescript: directives.typescript,
   traceur: directives.traceur,
-  less: require('./transformers/less.js'),
-  sass: require('./transformers/sass.js'),
-  markdown: require('./transformers/md.js'),
-  'coffee-script': require('./transformers/coffee.js'),
-  jade: require('./transformers/jade.js'),
-  stylus: require('./transformers/styl.js'),
-  webtask: require('./transformers/webtask.js'),
+  less: require('./transformers/less'),
+  sass: require('./transformers/sass'),
+  markdown: require('./transformers/md'),
+  'coffee-script': require('./transformers/coffee'),
+  jade: require('./transformers/jade'),
+  stylus: require('./transformers/styl'),
+  webtask: require('./transformers/webtask'),
 }, function (transformer, name) {
   transformer.name = name;
   return transformer;
@@ -190,8 +191,11 @@ Preview.render = function (request, reply) {
     return Bluebird
       .map(transformers, function (transformer) {
         for (var sourcePath in preview.files) {
+          var provides = typeof transformer.provides === 'function'
+            ? transformer.provides(sourcePath)
+            : transformer.provides;
           var produces = sourcePath
-            .replace(transformer.matches, transformer.provides);
+            .replace(transformer.matches, provides);
             
           if (produces === path) {
             var content = preview.files[sourcePath];
