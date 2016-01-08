@@ -220,6 +220,7 @@ Preview.render = function (request, reply) {
         request.visitor.event('previews', 'compile:implicit', transformer.name, 1);
         
         return Bluebird.try(transformer.transform, [context], transformer)
+          .tap(function () { requestPath = path; })
           .catch(function (err) {
             preview.log({
               source: transformer.name,
