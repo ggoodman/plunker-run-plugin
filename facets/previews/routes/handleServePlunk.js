@@ -1,4 +1,5 @@
 var Joi = require('joi');
+var Schema = require('../schema');
 var _ = require('lodash');
 
 
@@ -7,7 +8,7 @@ module.exports = {
   validate: {
     params: {
       plunkId: Joi.string().alphanum().required(),
-      path: Joi.string().regex(/^\/?[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*(?:\/[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).allow('').default('').optional(),
+      path: Schema.pathname.default('').optional(),
     },
   },
   pre: [{

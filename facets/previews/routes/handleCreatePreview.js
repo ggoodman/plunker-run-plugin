@@ -1,4 +1,5 @@
 var Joi = require('joi');
+var Schema = require('../schema');
 var _ = require('lodash');
 
 
@@ -6,12 +7,12 @@ module.exports = {
   validate: {
     params: {
       previewId: Joi.string().alphanum().required(),
-      path: Joi.string().regex(/^\/?[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*(?:\/[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/).allow('').default('').optional(),
+      path: Schema.pathname.default('').optional(),
     },
     payload: Joi.object().keys({
       sessid: Joi.string().optional(),
       files: Joi.object().pattern(
-        /^\/?[._$a-zA-Z0-9][\w-]*(?:\.[\w-]+)*(?:\/[a-zA-Z0-9][\w-]*(?:\.[\w-]+)*)*$/,
+        Schema.pathname.regex,
         Joi.object().keys({
           content: Joi.string().allow('').required(),
           encoding: Joi.string().allow('utf8').default('utf8').optional(),
